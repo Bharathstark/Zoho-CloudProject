@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="compile" default="compile" basedir=".">
+<property name="mickey.home" value="${prodbase}"/>
+<property name="source.home" value="${outputdir}"/>
+ <target name="compile">
+   <!--echo message="${file}"/-->
+   <dirname file="${file}" property="filedir"/>
+   <basename file="${file}" property="filename"/>
+   <echo message="${filedir}  -- ${filename} "/>
+   <javac srcdir="${filedir}" destdir="${destdir}" includes="${filename}" debug="on" deprecation="off">
+      <classpath>
+	<!--fileset dir="C:/adventnet sw/sdp/milestone/7608/ppmfiles/">
+           <include name="*"/>
+	</fileset-->
+
+        <fileset dir="${source.home}">
+           <include name="**/*.jar"/>
+           <include name="**/*.sar"/>
+        </fileset>
+
+        <fileset dir="${mickey.home}">
+           <include name="**/*.jar"/>
+           <include name="**/*.sar"/>
+        </fileset>
+	
+      </classpath>
+   </javac>
+ </target>
+</project>
+
+<!--
+{jdk.home}{/}bin{/}javac
+{debuginfo} {deprecation} {optimize} {outputdir} {encoding} {source.opt} {bootclasspath.opt} {bootclasspath} -classpath {filesystems}{:}{classpath} {files} 
+-->
+
+<!--
+Netbeans External compilation configuration.
+cmd
+/c ant.bat -f c:\utils\allcompile..xml -Dfile=c:\home\development\Pers_SA_TEST\DDTester.java -Ddestdir=c:\home\development\Pers_SA_TEST\testant  -Dprodbase=c:/home/development/Pers_SA_TEST                                                                     
+/c C:\Xtras\apache-ant-1.6.1\bin\ant.bat -f c:/build.xml -Dfile={files}
+-->
