@@ -1,0 +1,262 @@
+<security xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../conf/security-sdp.xsd">
+    <!--
+    All request related url entries should be specified here.
+    -->
+    <urls method="get,post">
+	    <url path="/workorder/WorkOrder.jsp"  roles="ViewRequests" user_type="all"/>
+		<url path="/workorder/Bharath.jsp"  roles="SDAdmin" user_type="all"/>
+		<url path="/workorder/Administrator.jsp"  roles="SDAdmin" user_type="all"/>
+		<url path="/workorder/User.jsp"  roles="SDAdmin" user_type="all"/> 	
+		<url path="/Hello"  roles="SDAdmin" user_type="all"/> 	
+		<url path="/Swift"  roles="SDAdmin" user_type="all"/> 	
+		<url path="/User"  roles="SDAdmin" user_type="all"/>
+		<url path="/FileUpload"  roles="SDAdmin" user_type="all"/>
+	    <url path="/CompleteRequest.do" roles="ModifyRequests,SDGuest" user_type="all"/> 
+	    <!-- request dependency marking starts --> 
+		<!-- Associate dependency requests window -->
+	    	<url path="/AssoDependencyRequest.do"  roles="ModifyRequests">
+			<param name="viewType" regex="All_Pending_User|All_Completed_User|All_Pending|Unassigned_System|All_Completed|Service_Requests|Incident_Requests|All_Requests"/>
+			<param name="Associate" regex="true"/>
+			<param name="DepWorkorderId" type="long" max-occurrences="250"/>
+			<param name="WorkorderId" type="long"/>
+			<param name="SearchText" type="String" max-len="-1"/>
+		</url>
+
+	 	<!-- Request Dependency Graph Manipulation window -->
+		<url path="/RequestDependencies.do"  roles="ModifyRequests">
+			<param name="SubmitAction" regex="AddRequestDependency|DeleteRequestDependency|DeleteRequestFromDependencyGroup"/>
+			<param name="EntityId" type="long"/>
+			<param name="Module" regex="request|archived"/>
+		</url>
+
+	 	<!-- Request details page - Dependency Tab -->
+		<url path="/WODependencyDef.do"  roles="ViewRequests">
+			<param name="SubmitAction" regex="DissociateDependency|DissociateLastDependency"/>
+			<param name="IsArchive" regex="true"/>
+			<param name="AssociatedEntityID" type="long"/>
+			<param name="DepWorkorderId" type="long" max-occurrences="250"/>
+			<param name="Module" regex="request|archived"/>
+		</url>
+
+
+	    <!-- request dependency marking ends -->
+	    <!-- Fix for vulnerability issue sd-60123-->
+	     <!--url path="/common/WoUpdateField.jsp" roles="ModifyRequests"/-->
+	    <!-- Fix for vulnerability issue sd-60123-->
+	   <!-- Fix for vulnerability issue sd-60094--> 
+	<url path="/Templates.do" user_type="all">
+	        <param name="module" regex="mergedRequest|incident|serviceRequest" min-occurrences="1"/>
+	        <param name="serviceId" type="long"/>
+			<param name="fromPMTask" regex="true"/>
+			<param name="fromReorder" regex="true"/>
+			<param name="fromIncidentList" regex="true"/>
+	    </url>
+	<!-- Fix for vulnerability issue sd-60094-->
+	
+	<!-- For Preventive Maintenance Task Starts-->
+	<url path="/ScheduleRequest.do" method="GET" roles="PreventiveMaintenanceTaskConfig">
+		<param name="id" type="long"/>
+		<param name="reqTemplate" type="long"/>
+		<param name="mode" regex="add|edit|delete|execute"/>
+	</url>
+	<url path="/ScheduleRequest.do" method="POST" operation-param="scheduleType" operation-value="Once" roles="PreventiveMaintenanceTaskConfig">
+		<param name="sreqID" type="long"/>
+		<param name="reqTemplate" type="long" min-occurrences="1"/>	
+		<param name="onceHours" regex="hours" min-occurrences="1"/>
+		<param name="onceMinutes" regex="00|15|30|45" min-occurrences="1"/>
+		<param name="onceDate" regex="date_format1" min-occurrences="1"/>
+		
+	</url>
+	<url path="/ScheduleRequest.do" method="POST" operation-param="scheduleType" operation-value="Daily" roles="PreventiveMaintenanceTaskConfig">
+		<param name="sreqID" type="long"/>
+		<param name="reqTemplate" type="long" min-occurrences="1"/>
+		<param name="dailyHours" regex="hours" min-occurrences="1"/>
+		<param name="dailyMinutes" regex="00|15|30|45" min-occurrences="1"/>
+		<param name="dailyDate" regex="date_format1" min-occurrences="1"/>
+	</url>
+	
+	<url path="/ScheduleRequest.do" method="POST" operation-param="scheduleType" operation-value="Weekly" roles="PreventiveMaintenanceTaskConfig">
+		<param name="sreqID" type="long"/>
+		<param name="reqTemplate" type="long" min-occurrences="1"/>
+		<param name="weeklyHours" regex="hours" min-occurrences="1"/>
+		<param name="weeklyMinutes" regex="00|15|30|45" min-occurrences="1"/>
+		<param name="selectedDays" max-occurrences="7" regex="1|2|3|4|5|6|7" min-occurrences="1"/>
+	</url>
+	
+	<url path="/ScheduleRequest.do" method="POST" operation-param="scheduleType" operation-value="Monthly" roles="PreventiveMaintenanceTaskConfig">
+		<param name="sreqID" type="long"/>
+		<param name="reqTemplate" type="long" min-occurrences="1"/>
+		<param name="monthlyHours" regex="hours" min-occurrences="1"/>
+		<param name="monthlyMinutes" regex="00|15|30|45" min-occurrences="1"/>
+		<param name="selectedMonths" max-occurrences="12" regex="month" min-occurrences="1"/>
+		<param name="dayOfMonth" regex="date" min-occurrences="1"/>
+	</url>
+	
+	<url path="/ScheduleRequest.do" method="POST" operation-param="scheduleType" operation-value="Periodic" roles="PreventiveMaintenanceTaskConfig">
+		<param name="sreqID" type="long"/>
+		<param name="reqTemplate" type="long" min-occurrences="1"/>
+		<param name="scheduleInterval" regex="positive_Integers" min-occurrences="1"/>
+	</url>
+	<!-- For Preventive Maintenance Task Ends-->
+		<!-- Assign Technician dialogbox in Request Details page -->
+		<url path="/AssignOwner.do"  roles="AssigningTechnician">
+			<param name="srcFrom" regex="WOListView|"/>
+			<param name="woID" type="long"/>
+			<param name="technician" type="String" max-len="-1"/>
+			<param name="group" type="String" max-len="-1"/>
+		</url>
+		<!-- Assign Technician dialogbox in Request Details page ends -->
+
+		<!-- Add notes vulnerability in FF SD_61752 -->
+		<url path="/workorder/AddNotes.jsp"  roles="ViewRequests" user_type="all">
+		    <param name="workorderID"  type="long"/>
+		    <param name="isPublic"  type="boolean"/>
+		    <param name="type"  regex="ADD|EDIT|DELETE"/>
+		</url>
+	
+	<!--SD-63283 ListRequests.do page -->
+	<url path="/ListRequests.do"  roles="ViewRequests" >    
+	<param name="popUserDetails"  type="String" max-len="-1"/>
+    <param name="mode"  type="String" max-len="-1"/>
+    <param name="id"  type="long" />
+	<param name="reqId"  type="long"/>    
+	<param name="viewType" regex="Open_Requester|Onhold_Requester|All_Pending_Requester|Closed_Requester|All_Requester|All_Completed_Requester|Waiting_Update|Updated_By_Me"/>
+	</url>
+	<!--SD-63282 view Assets belonging to user page in Request Details page (Actions)-->
+     <url path="/UserAssets.do"  roles="ViewRequests" >
+    <param name="userId"  type="long" />
+	</url>
+	<url path="/jsp/UserAssets.jsp"  roles="ViewRequests" >
+    <param name="userId"  type="long" />
+	</url>
+	<!--SD-63281 The submit for approval page (SubmitForApproval.do)-->
+	<url path="/SubmitForApproval.do"  roles="ModifyRequests" >
+    <param name="MODULE"  type="String" max-len="-1"/>
+    <param name="ITEMID"  type="long" />
+	</url>
+
+	<url path="/approval/SubmitForApproval.jsp"  roles="ModifyRequests" >
+    <param name="ITEMID"  type="long" />
+    <param name="MODULE"  type="String" max-len="-1"/>
+	</url>
+	<url path="/WorkOrder.do" user_type="all">
+    <param name="reqTemplate"  type="long" />
+    <param name="isOverwrite" regex="true|false" />
+	</url>
+	<url roles="DeleteRequests"  method="post" csrf="true" operation-param="woRequestMode" operation-value="deleteWO" path="/WorkOrder.do">
+		<param name="woMode" regex="deleteWO"/>
+		<param name="woID" type="long"/>
+		<param name="deletFrom" regex="TRASH"/>
+	</url>
+	<url path="/AddResolution.do"  roles="ViewRequests" user_type="all"> 
+		<param name="module"  type="String" max-len="-1"/> 
+		<param name="mode"  type="String" max-len="-1"/> 
+		<param name="technicianID"  type="String" max-len="-1"/> 
+		<param name="from"  type="String" max-len="-1"/> 
+		<param name="woID"  type="long" /> 
+		<param name="associatedEntityID"  type="long" /> 
+		<param name="associatedEntity"  type="String" max-len="-1"/> 
+		<param name="selectedStatus@@@1"  type="String" max-len="-1"/> 
+		<param name="onHoldSet1"  type="String" max-len="-1"/> 
+		<param name="FORMNAME"  type="String" max-len="-1"/> 
+		<param name="date1@@@1"  type="String" max-len="-1"/> 
+		<param name="woStatus"  type="long" /> 
+		<param name="MOD_IND"  type="String" max-len="-1"/> 
+		<param name="requestID"  type="long" /> 
+		<param name="addResolutionButton"  type="String" max-len="-1"/> 
+		<param name="resolution"  type="String" max-len="-1"/> 
+		<param name="editResolution"  type="String" max-len="-1"/> 
+		<param name="onHoldComments@@@1"  type="String" max-len="-1"/> 
+		<param name="copySln" type="boolean" />
+		<param name="sln_id" type="long" />
+	</url>
+	<!--LoadRequestResolutionWorklog.jsp is commented for to avoid duplicate url entry suggested by Kiruthika J-->
+	<!--<url path="/common/LoadRequestResolutionWorklog.jsp"  roles="ViewRequests" > 
+		<param name="module"  type="String" max-len="-1"/> 
+		<param name="SUBREQUEST"  type="String" max-len="-1"/> 
+		<param name="from"  type="String" max-len="-1"/> 
+		<param name="associatedEntityID"  type="long" /> 
+		<param name="associatedEntity"  type="String" max-len="-1"/> 
+    </url>-->
+ 
+	<url path="/workorder/requestResolution.jsp" roles="ViewRequests,ViewSolutions" user_type="all">
+		<param name="reqStatusClose" type="boolean" />
+	</url>
+	<url path="/workorder/SolutionPopup.jsp" roles="ViewRequests,ViewSolutions">
+        <param name="sln_id" type="long" />
+        <param name="request_solution_id" type="long"/>
+        <param name="reqStatusClose" type="boolean" />
+        <param name="showbtmfooter" type="boolean" />
+    </url>
+    <url path="/workorder/popup_inference.jsp" roles="ModifyResolution,ModifyRequests,ViewSolutions">
+        <param name="request_sln_id" type="long" />
+        <param name="request_id" type="long"/>
+        <param name="sln_id" type="long"/>
+    </url>
+    <!-- Convert Service TO Incident in Request Details page Start-->
+    <url path="/ConvertWorkOrder.do"  roles="ModifyRequests">
+    	<param name="workOrderId" type="long"/>
+    	<param name="newTemplateId" type="long"/>
+    	<param name="newServiceId" type="long"/>
+    	<param name="isTasksOverwrite" type="boolean"/>
+    	<param name="isFieldsOverwrite" type="boolean"/>
+    </url>
+    <url path="/workorder/ConvertToIncident.jsp"  roles="ModifyRequests">    
+    	<param name="woID" type="long"/>
+    </url>
+    <!-- Convert Service TO Incident in Request Details page End-->
+	<url path="/InstallSoftware.do">
+		<param name="workOrderID" type="String" max-len="-1"/>
+	</url>
+	<url path="/RunScript.do">
+		<param name="workOrderID" type="String" max-len="-1"/>
+	</url>
+	<url roles="IncidentRequestConfig,ServiceRequestConfig" path="/servlet/SDAjaxServlet" operation-param="action" operation-value="organize_request_catalog">
+		<param name="serviceCategoryId" type="long" min-occurrences="1"/>
+		<param name="categorySortOrder" type="JSONObject" template="reorder" min-occurrences="1" max-len="-1"/>
+		<param name="templateSortOrder" type="JSONObject" template="reorder" min-occurrences="1" max-len="-1"/>
+	</url>
+	<!-- SD-70608 SITC Vulnerability Fix-->
+	<url path="/RequesterReqView.cc">
+		<param name="SUBREQUEST" regex="true"/>
+      	<param name="UNIQUE_ID" regex="RequesterReqView"/>
+    </url>
+    <!-- OP Framework Request API's from Request module-->
+    <url path="/api/v3/self_service_portal_settings"  roles="ViewRequests" user_type="all"/>
+    <url path="/api/v3/request_closing_rules"  roles="ViewRequests" user_type="all"/>
+    <url path="/api/v3/requests/[0-9]+/conversations"  roles="ViewRequests" user_type="all">
+    	<param name="INPUT_DATA" template="req_conversations" type="JSONObject" max-len="-1"/>
+    	<param name="APPROVAL_KEY" type="String" max-len="3500"/>
+	</url>
+    <url path="/api/v3/requests/[0-9]+/notifications/[0-9]+"  roles="ViewRequests" user_type="all">
+    	<param name="INPUT_DATA" template="request_notification" type="JSONObject" max-len="-1"/>
+    	<param name="APPROVAL_KEY" type="String" max-len="3500"/>
+    </url>
+    <url path="/api/v3/requests/[0-9]+/request_detail"  roles="ViewRequests" user_type="all">
+     	<param name="includes" template="request_detail_includes" json-array-size="1-25" type="JSONArray" max-len="-1"/>
+     	<param name="APPROVAL_KEY" type="String" max-len="3500"/>
+    </url>
+    <url path="/api/v3/requests/[0-9]+/notifications/[0-9]+/attachments/[0-9]+"  roles="ViewRequests" user_type="all"/>
+    <!-- OP Framework Request API's fron Request module ends here-->
+	</urls>
+	<urls disable-extraparam="true">
+		<url path="/setup/AddCatalogResource.jsp" roles="ServiceRequestConfig">
+			<param name="resID" type="long"/>
+		</url>
+	</urls>
+	<jsontemplates>
+		<jsontemplate name="reorder">
+			<key name="Integers" name-regex="true" type="long"/>
+		</jsontemplate>
+	</jsontemplates>
+
+	<regexes>
+		<regex name="Integers" value="^[-]?[0-9]+$"/>
+		<regex name="hours" value="^(0?[0-9]|1[0-9]|2[0123])$" description="hours range from 0 to 23 or 00 to 23"/>
+		<regex name="date_format1" value="^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-(19|20)\d\d$" description="validate date format dd-mm-yyyy. This will not handle the number of days correct in a month for ex it allow 31 days for feb."/>
+		<regex name="date" value="^([1-9]|[12][0-9]|3[01])$" description="validate date from 1 to 31"/>
+		<regex name="month" value="^([0-9]|[1][01])$" description="validate month from 0 to 11"/>
+		<regex name="positive_Integers" value="^[1-9]{1}[0-9]*$" description="validation for positive integers greater than zero"/>
+	</regexes>
+</security>
+<!-- $Id$ -->

@@ -1,0 +1,1459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<!DOCTYPE web-app
+PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+"http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<!-- Changes made to the below tag is to make sure that web.xml adheres to Servlet 3.0 specification.  Suggested by Framework team
+
+	** As we use Tomcat 7, Framework supports multiple web-fragment.xml which can be found in SDJSPClasses.jar.  Filters are configured in web-fragment.xml
+-->
+<web-app metadata-complete="true" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns="http://java.sun.com/xml/ns/javaee" 
+	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd" id="WebAppFragment_ID1" version="3.0">
+
+
+	<!--absolute-ordering>
+		<name>frameworkfilters</name>
+		<name>SDPFilters</name>
+		<name>mickeyclientfilters</name>
+	</absolute-ordering-->
+
+	<!--frameworkfilters Starts -->
+	<!-- Dont change the order of MethodFilter. This filter is used for disable vulnerable HTTP methods  -->
+	<filter>
+		<filter-name>MethodFilter</filter-name>
+		<filter-class>com.manageengine.servicedesk.filter.MethodFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>MethodFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+	<!-- This filter is used for disable vulnerable HTTP methods  -->
+
+	<filter>
+		<filter-name>AssociateCredential</filter-name>
+		<filter-class>com.adventnet.authentication.filter.AssociateCredential</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>AssociateCredential</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Filter to remove excluded request params from the request -->
+	<filter>
+		<filter-name>ParamFilter</filter-name>
+		<filter-class>com.adventnet.filters.ParamFilter</filter-class>
+		<init-param>
+			<param-name>excludeParams</param-name>
+			<param-value>(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>ParamFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!--frameworkfilters Ends -->
+
+	<!--SDPFilters Starts -->
+	<filter>
+		<filter-name>NTLMV2Filter</filter-name>
+		<filter-class>com.adventnet.servicedesk.authentication.NTLMV2Filter</filter-class>
+
+	</filter>
+	<filter-mapping>
+		<filter-name>NTLMV2Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>NTLMV2CredentialAssociationFilter</filter-name>
+		<filter-class>com.adventnet.servicedesk.authentication.NTLMV2CredentialAssociationFilter</filter-class>
+
+	</filter>
+	<filter-mapping>
+		<filter-name>NTLMV2CredentialAssociationFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>ExpiresFilter</filter-name>
+		<filter-class>com.adventnet.client.util.web.ExpiresFilter</filter-class>
+		<init-param>
+			<param-name>expires</param-name>
+			<param-value>22500</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>ExpiresFilter</filter-name>
+		<url-pattern>*.gif</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>ExpiresFilter</filter-name>
+		<url-pattern>*.png</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>ExpiresFilter</filter-name>
+		<url-pattern>*.css</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>ExpiresFilter</filter-name>
+		<url-pattern>*.js</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>ExpiresFilter</filter-name>
+		<url-pattern>*.jpg</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>ExpiresFilter</filter-name>
+		<url-pattern>*.html</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>rememberMe</filter-name>
+		<filter-class>com.adventnet.servicedesk.filter.RememberMe</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>rememberMe</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Mickey_Client_Ends -->
+	<!--Msp filter start-->
+	<filter>
+		<filter-name>UrlRewriteFilter</filter-name>
+		<filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+		<init-param>
+			<param-name>logLevel</param-name>
+			<param-value>INFO</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>UrlRewriteFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!--Msp filter ends-->
+
+	<!-- Zoho Security Filter starts here -->
+
+	<filter>
+		<filter-name>SdpSecurityFilter</filter-name>
+		<filter-class>com.manageengine.servicedesk.filter.SdpSecurityFilter</filter-class>
+		<init-param>
+			<param-name>development.mode</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<init-param>
+			<param-name>config-file</param-name>
+			<param-value>../../../conf/security-defaultresponseheaders.xml,../../../conf/security-common.xml,../../../conf/security-properties.xml,security,security/dynamic_urls_conf</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>SdpSecurityFilter</filter-name>
+		<url-pattern>*.jsp</url-pattern>
+		<url-pattern>*.do</url-pattern>
+		<url-pattern>*.cc</url-pattern>
+		<url-pattern>*.swf</url-pattern>
+		<url-pattern>*.up</url-pattern>
+		<url-pattern>/servlets/*</url-pattern>
+		<url-pattern>/servlet/*</url-pattern>
+		<url-pattern>/sdpapi/*</url-pattern>
+		<url-pattern>/sdpapiv2/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
+		<!-- SD-71558 issue fix -->
+		<url-pattern>*.json</url-pattern>
+		<url-pattern>/importssl/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Zoho Security Filter ends here -->
+
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>com.adventnet.servicedesk.filter.EncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>contentType</param-name>
+			<param-value>text/html</param-value>
+		</init-param>
+		<init-param>
+			<param-name>ENABLE_XSS_SCRIPT_SCAN_FOR_POST_METHOD</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>excludeParams</param-name>
+			<param-value>(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>*.jsp</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>*.do</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/app</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/sdpapi/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/sdpapiv2/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/api/v3/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/SoftwareFileUploader.up</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/PurchaseRequestFileUploader.up</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/WOResolutionFileUploader.up</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>*.cc</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>*.swf</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlets/SDServerStatusServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/RssFeedCreator</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/WorkstationRssFeedServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/RequestRssCountServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlets/RequestServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlets/RequesterServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlets/TechnicianServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlets/AssetServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlets/SiteServlet</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/CmClientUtilServlet</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/slaapi/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/SDAjaxServlet</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/AJaxServlet</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlet/RuleFilterServlet</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/j_security_check</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/servlets/SDPAPIUnAuthenticatedServlet</url-pattern>
+	</filter-mapping>
+	<!-- CWF - START -->
+	<filter>
+		<filter-name>ResetThreadLocal</filter-name>
+		<filter-class>com.manageengine.servicedesk.common.filter.ResetThreadLocal</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>*.jsp</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>/jsp/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>/change/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>/tasks/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>/app</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>*.cc</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>/servlet/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>/servlets/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>ResetThreadLocal</filter-name>
+		<url-pattern>/api/v3/*</url-pattern>
+	</filter-mapping>
+
+	<!--SDPFilters Ends -->
+
+	<!--mickeyclientfilters Starts -->
+	<filter>
+		<filter-name>DemoFilter</filter-name>
+		<filter-class>com.adventnet.client.demo.web.DemoFilter</filter-class>
+		<init-param>
+			<param-name>view</param-name>
+			<param-value></param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>DemoFilter</filter-name>
+		<url-pattern>/STATE_ID/*</url-pattern>
+	</filter-mapping>
+
+
+	<filter>
+		<filter-name>StateFilter</filter-name>
+		<filter-class>com.adventnet.client.view.web.StateFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>StateFilter</filter-name>
+		<url-pattern>/STATE_ID/*</url-pattern>
+	</filter-mapping>
+	<!--mickeyclientfilters Ends -->
+	<!-- SDP-DC integration -->
+	<listener>
+		<listener-class>com.adventnet.servicedesk.mesolutions.sso.SDPSessionListener</listener-class>
+	</listener>
+	<!-- SDP-DC integration -->
+
+	<!-- IT360 NEW MODEL CHANGES - START -->
+	<servlet>
+		<servlet-name>IT360UtilitiesServlet</servlet-name>
+		<servlet-class>com.adventnet.console.servlet.IT360UtilitiesServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>IT360UtilitiesServlet</servlet-name>
+		<url-pattern>/servlets/IT360UtilitiesServlet</url-pattern>
+	</servlet-mapping>
+	<!-- IT360 NEW MODEL CHANGES - END -->
+
+	<servlet>
+		<servlet-name>ntlmv2</servlet-name>
+		<servlet-class>
+			com.adventnet.servicedesk.authentication.NTLMV2Servlet
+		</servlet-class>
+
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ntlmv2</servlet-name>
+		<url-pattern>/ntlmv2</url-pattern>
+	</servlet-mapping>
+	<!-- CWF - END -->
+
+	<servlet>
+		<servlet-name>action</servlet-name>
+		<servlet-class>
+			org.apache.struts.action.ActionServlet
+		</servlet-class>
+		<init-param>
+			<param-name>config</param-name>
+			<!-- cwf start -->
+			<param-value>/WEB-INF/struts-config.xml,/WEB-INF/change-struts-config.xml</param-value>
+			<!-- cwf end -->
+		</init-param>
+		<init-param>
+			<param-name>chainConfig</param-name>
+			<param-value>org/apache/struts/tiles/chain-config.xml</param-value>
+		</init-param>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>4</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.json</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.sd</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>app_action</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.EmberServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>app_action</servlet-name>
+		<url-pattern>/app</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>SDServerStatusServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.SDServerStatusServlet</servlet-class>
+	</servlet>
+	<!-- RuleFilterServlet -->
+	<servlet>
+		<servlet-name>RuleFilterServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.RuleFilterServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>RuleFilterServlet</servlet-name>
+		<url-pattern>/servlet/RuleFilterServlet</url-pattern>
+	</servlet-mapping>
+	<!--  ends  -->
+	<servlet>
+		<servlet-name>MspLoginImageServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.MspLoginImageServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>MspLoginImageServlet</servlet-name>
+		<url-pattern>/servlets/MspLoginImageServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SDServerStatusServlet</servlet-name>
+		<url-pattern>/servlets/SDServerStatusServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>RequestServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.workorder.RequestOperationServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>RequestServlet</servlet-name>
+		<url-pattern>/servlets/RequestServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>SiteOperationServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.site.SiteOperationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SiteOperationServlet</servlet-name>
+		<url-pattern>/servlets/SiteServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>RequesterOperationServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.requester.RequesterOperationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>RequesterOperationServlet</servlet-name>
+		<url-pattern>/servlets/RequesterServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ITMSSDPIntfServlet</servlet-name>
+		<servlet-class>com.adventnet.itms.ITMSSDPIntfServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ITMSSDPIntfServlet</servlet-name>
+		<url-pattern>/servlet/ITMSSDPIntfServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>TicketTemplatesMapper</servlet-name>
+		<servlet-class>com.adventnet.itms.TicketTemplatesMapper</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TicketTemplatesMapper</servlet-name>
+		<url-pattern>/servlet/TicketTemplatesMapper</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>UserCleanupServlet</servlet-name>
+		<servlet-class>com.adventnet.itms.UserCleanupServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UserCleanupServlet</servlet-name>
+		<url-pattern>/servlet/UserCleanupServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ITMSRequestHandlerServlet</servlet-name>
+		<servlet-class>com.adventnet.itms.ITMSRequestHandlerServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ITMSRequestHandlerServlet</servlet-name>
+		<url-pattern>/servlet/ITMSRequestHandlerServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>IT360LicenseServlet</servlet-name>
+		<servlet-class>com.adventnet.itms.IT360LicenseServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>IT360LicenseServlet</servlet-name>
+		<url-pattern>/servlet/IT360LicenseServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>AssetOperationServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.AssetOperationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AssetOperationServlet</servlet-name>
+		<url-pattern>/servlets/AssetServlet</url-pattern>
+	</servlet-mapping>
+
+
+	<servlet>
+		<servlet-name>TechnicianOperationServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.technician.TechnicianOperationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TechnicianOperationServlet</servlet-name>
+		<url-pattern>/servlets/TechnicianServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ClientUtilServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.ClientUtilServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ClientUtilServlet</servlet-name>
+		<url-pattern>/servlet/ClientUtilServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>HdClientUtilServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.HdClientUtilServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>HdClientUtilServlet</servlet-name>
+		<url-pattern>/servlet/HdClientUtilServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>HdFileDownloadServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.HdFileDownloadServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>HdFileDownloadServlet</servlet-name>
+		<url-pattern>/servlet/HdFileDownloadServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>RoboCommunicationServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.RoboCommunicationServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>RoboCommunicationServlet</servlet-name>
+		<url-pattern>/servlet/RoboCommunicationServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>PerformanceDebug</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.PerformanceDebug</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>PerformanceDebug</servlet-name>
+		<url-pattern>/servlet/PerformanceDebug</url-pattern>
+	</servlet-mapping>
+
+	<!--<servlet>
+        <servlet-name>AllowedValuesServlet</servlet-name>
+        <servlet-class>com.adventnet.servicedesk.servlet.AllowedValuesServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AllowedValuesServlet</servlet-name>
+        <url-pattern>/servlet/AllowedValuesServlet</url-pattern>
+    </servlet-mapping> -->
+
+
+	<!-- SD-11880 AJaxDomainServlet is created as servlet to call AjaxServlet instead of servlet name. - to call without any authentication -->
+	<!-- AJaxDomainServlet is created separately to hold domain operations needed in non-login mode -->
+	<servlet>
+		<servlet-name>AJaxDomainServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.AJaxDomainServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>AJaxDomainServlet</servlet-name>
+		<url-pattern>/domainServlet/AJaxDomainServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>AJaxServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.AJaxServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>AJaxServlet</servlet-name>
+		<url-pattern>/servlet/AJaxServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>SDAjaxServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.SDAjaxServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SDAjaxServlet</servlet-name>
+		<url-pattern>/servlet/SDAjaxServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ZRAJaxServlet</servlet-name>
+		<servlet-class>com.manageengine.zrmeinteg.client.servlet.ZRAJaxServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ZRAJaxServlet</servlet-name>
+		<url-pattern>/servlet/ZRAJaxServlet</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>SyncServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.SyncServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SyncServlet</servlet-name>
+		<url-pattern>/servlet/SyncServlet</url-pattern>
+	</servlet-mapping>
+
+
+
+	<servlet>
+		<servlet-name>DebugServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.DebugServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>DebugServlet</servlet-name>
+		<url-pattern>/servlet/DebugServlet</url-pattern>
+	</servlet-mapping>
+
+	<!--
+    This Servlet is for Custom Executions. This will be useful for the customers to write plugins using API's and embed in the application. As it is Customer Specifc Servlet, SDP is not supposed to write anything in this Servlet.
+    Also, Please don't remove this servlet. Customers might have created JARS and using the same in their Application.
+    -->
+	<servlet>
+		<servlet-name>CustomExecutorServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.CustomExecutorServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CustomExecutorServlet</servlet-name>
+		<url-pattern>/servlet/CustomExecutorServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ActionExecutorServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.actionplugin.servlet.SDPActionExecutorServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ActionExecutorServlet</servlet-name>
+		<url-pattern>/servlet/ActionExecutorServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>AdmpIntegrationServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.actionplugin.servlet.AdmpIntegrationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AdmpIntegrationServlet</servlet-name>
+		<url-pattern>/servlet/AdmpIntegrationServlet</url-pattern>
+	</servlet-mapping>
+
+	<!-- For Hand Shake Authentication -->
+	<servlet>
+		<servlet-name>HSKeyAuthenticator</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.actionplugin.servlet.HSKeyAuthenticator</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>HSKeyAuthenticator</servlet-name>
+		<url-pattern>/servlets/HSKeyAuthenticator</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>CacheInfoServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.CacheInfoServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>CacheInfoServlet</servlet-name>
+		<url-pattern>/servlet/CacheInfoServlet</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>ApprovalAuthServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.ApprovalAuthServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ApprovalAuthServlet</servlet-name>
+		<url-pattern>/servlet/ApprovalAuthServlet</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>PRApprovalServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.purchase.action.PRApprovalAction</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>PRApprovalServlet</servlet-name>
+		<url-pattern>/PRApproval</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>POApprovalServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.purchase.action.POApprovalAction</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>POApprovalServlet</servlet-name>
+		<url-pattern>/POApproval</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>DcServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.DcServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>DcServlet</servlet-name>
+		<url-pattern>/DcServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ImageUploadServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.ImageUploadServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ImageUploadServlet</servlet-name>
+		<url-pattern>/servlet/ImageUploadServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>AgentTaskDetails</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.AgentTaskDetails</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>AgentTaskDetails</servlet-name>
+		<url-pattern>/AgentTaskDetails</url-pattern>
+	</servlet-mapping>
+
+	<!-- The RSS Feed Servlet -->
+	<servlet>
+		<servlet-name>RssFeedCreator</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.rss.RssFeedServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>RssFeedCreator</servlet-name>
+		<url-pattern>/servlet/RssFeedCreator</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>WSRssFeedCreator</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.rss.WorkstationRssFeedServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>WSRssFeedCreator</servlet-name>
+		<url-pattern>/servlet/WorkstationRssFeedServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>RequestRssCountCreator</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.rss.RequestSupportServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>RequestRssCountCreator</servlet-name>
+		<url-pattern>/servlet/RequestRssCountServlet</url-pattern>
+	</servlet-mapping>
+
+	<!-- select2 start-->
+	<servlet>
+		<servlet-name>Select2Servlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.Select2Servlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>MentionServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.MentionServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>MentionServlet</servlet-name>
+		<url-pattern>/servlet/MentionServlet</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>ErrorServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.ErrorServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ErrorServlet</servlet-name>
+		<url-pattern>/Error</url-pattern>
+	</servlet-mapping>
+
+	<error-page>
+		<error-code>400</error-code>
+		<location>/Error</location>
+	</error-page>
+	<error-page>
+		<error-code>403</error-code>
+		<location>/Error</location>
+	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/Error</location>
+	</error-page>
+	<error-page>
+		<error-code>405</error-code>
+		<location>/AssetHomePage.do</location>
+	</error-page>
+	<error-page>
+		<error-code>408</error-code>
+		<location>/jsp/exceptionerror.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>414</error-code>
+		<location>/jsp/exceptionerror.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/jsp/exceptionerror.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>505</error-code>
+		<location>/jsp/exceptionerror.jsp</location>
+	</error-page>
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type>
+		<location>/jsp/exceptionerror.jsp</location>
+	</error-page>
+
+	<servlet-mapping>
+		<servlet-name>Select2Servlet</servlet-name>
+		<url-pattern>/servlet/Select2Servlet</url-pattern>
+	</servlet-mapping>
+	<!-- select2 end-->
+	<servlet>
+		<servlet-name>WsDiscoveryServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.discoveryServlet.WsDiscoveryServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>WsDiscoveryServlet</servlet-name>
+		<url-pattern>/discoveryServlet/WsDiscoveryServlet</url-pattern>
+	</servlet-mapping>
+
+	<!--Processing remote data -->
+	<servlet>
+		<servlet-name>RemoteDataServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.discoveryServlet.RemoteDataServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>RemoteDataServlet</servlet-name>
+		<url-pattern>/discoveryServlet/RemoteDataServlet</url-pattern>
+	</servlet-mapping>
+
+	<!-- Processing agent upgrade and uninstall status.-->
+	<servlet>
+		<servlet-name>AgentStatusServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.discoveryServlet.AgentStatusServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>AgentStatusServlet</servlet-name>
+		<url-pattern>/discoveryServlet/AgentStatusServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>xmlrpc-sdpapi</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.sdpapi.servlet.APIServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>xmlrpc-sdpapi</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- SDP-DC integration -->
+	<servlet>
+		<servlet-name>SDPRequestHandler</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.mesolutions.sso.SDPRequestHandler</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>SDPRequestHandler</servlet-name>
+		<url-pattern>/servlets/DCPluginServlet</url-pattern>
+	</servlet-mapping>
+	<!--SDP-DC integration -->
+
+	<!-- CWF - START -->
+	<servlet>
+		<servlet-name>CmClientUtilServlets</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.CmClientUtilServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CmClientUtilServlets</servlet-name>
+		<url-pattern>/servlets/CmClientUtilServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>CmClientUtilServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.CmClientUtilServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CmClientUtilServlet</servlet-name>
+		<url-pattern>/servlet/CmClientUtilServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ClientLogServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.ClientLogServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ClientLogServlet</servlet-name>
+		<url-pattern>/servlet/ClientLogServlet</url-pattern>
+	</servlet-mapping>
+	<!-- CWF - END -->
+	<!-- Change SLA -->
+
+	<servlet>
+		<servlet-name>SLAAPI</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.SLAAPIServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SLAAPI</servlet-name>
+		<url-pattern>/servlet/slaapi/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- Change SLA END -->
+	<!-- Solutions servlet mappings -->
+
+	<servlet>
+		<servlet-name>SolutionsServletUtil</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.kbase.util.SolutionsServletUtil</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SolutionsServletUtil</servlet-name>
+		<url-pattern>/servlet/SolutionsServletUtil</url-pattern>
+	</servlet-mapping>
+	<!-- /Solutions -->
+
+	<!-- The Welcome File List -->
+	<welcome-file-list>
+		<welcome-file>jsp/index.jsp</welcome-file>
+	</welcome-file-list>
+
+	<!-- Login required for the following URLs -->
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Secured Core Context</web-resource-name>
+			<!--url-pattern>/jsp/*</url-pattern-->
+			<url-pattern>*.do</url-pattern>
+			<url-pattern>/app</url-pattern>
+			<url-pattern>*.cc</url-pattern>
+			<url-pattern>*.ls</url-pattern>
+			<url-pattern>/SoftwareFileUploader.up</url-pattern>
+			<url-pattern>/PurchaseRequestFileUploader.up</url-pattern>
+			<url-pattern>/WOResolutionFileUploader.up</url-pattern>
+			<url-pattern>*.json</url-pattern>
+			<url-pattern>*.jsp</url-pattern>
+			<url-pattern>/servlet/*</url-pattern>
+			<url-pattern>/ze/*</url-pattern>
+			<url-pattern>*.sd</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>*</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<!-- Login not required for the following URLs -->
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Secured Core Context</web-resource-name>
+			<url-pattern>/approval/*</url-pattern>
+			<url-pattern>/purchase/ApprovalDetails.jsp</url-pattern>
+			<url-pattern>/jsp/AuthError.jsp</url-pattern>
+			<url-pattern>/AuthError.jsp</url-pattern>
+			<url-pattern>/jsp/pagenotfound.jsp</url-pattern>
+			<url-pattern>/jsp/exceptionerror.jsp</url-pattern>
+			<url-pattern>/ze/*</url-pattern>
+			<url-pattern>/servlet/HdFileDownloadServlet</url-pattern>
+			<url-pattern>/workorder/CloseWorkOrder.jsp</url-pattern>			<!-- Issue fix for id-61245 -->
+		</web-resource-collection>
+	</security-constraint>
+
+	<login-config>
+		<auth-method>CUSTOMFORM856</auth-method>
+		<form-login-config>
+			<form-login-page>/Login.jsp</form-login-page>
+			<form-error-page>/Login.jsp?error=true</form-error-page>
+		</form-login-config>
+	</login-config>
+
+	<!--taglib>
+		<taglib-uri>
+			/WEB-INF/struts-html.tld
+		</taglib-uri>
+		<taglib-location>
+			/WEB-INF/struts-html.tld
+		</taglib-location>
+	</taglib>
+
+	<taglib>
+		<taglib-uri>
+			/WEB-INF/struts-tiles.tld
+		</taglib-uri>
+		<taglib-location>
+			/WEB-INF/struts-tiles.tld
+		</taglib-location>
+	</taglib-->
+
+	<!-- to fix j_security_check start -->
+	<servlet>
+		<servlet-name>j_security_check</servlet-name>
+		<servlet-class>org.apache.jsp.jsp.index_jsp</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>default</servlet-name>
+		<servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>0</param-value>
+		</init-param>
+		<init-param>
+			<param-name>mappedfile</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<init-param>
+			<param-name>listings</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>jsp</servlet-name>
+		<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
+		<init-param>
+			<param-name>mappedfile</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<init-param>
+			<param-name>development</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>reloading</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>j_security_check</servlet-name>
+		<url-pattern>/j_security_check</url-pattern>
+	</servlet-mapping>
+	<!-- to fix j_security_check end -->
+
+	<!-- Mickey_Client_Starts -->
+
+	<servlet>
+		<servlet-name>ViewProcessor</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.client.view.web.SDViewProcessorServlet</servlet-class>
+
+		<init-param>
+			<param-name>MESSAGE_VIEWER</param-name>
+			<param-value>/components/jsp/MessageViewer.jsp</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ViewProcessor</servlet-name>
+		<url-pattern>*.cc</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ListViewProcessor</servlet-name>
+		<servlet-class>com.manageengine.flexilistview.action.ListViewProcessor</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ListViewProcessor</servlet-name>
+		<url-pattern>*.ls</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>FileUploader</servlet-name>
+		<servlet-class>com.manageengine.fileupload.action.FileUploader</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>FileUploader</servlet-name>
+		<url-pattern>/SoftwareFileUploader.up</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>FileUploader</servlet-name>
+		<url-pattern>/PurchaseRequestFileUploader.up</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>FileUploader</servlet-name>
+		<url-pattern>/WOResolutionFileUploader.up</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>MenuActionProcessor</servlet-name>
+		<servlet-class>com.adventnet.client.action.web.MenuActionProcessorSevlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>MenuActionProcessor</servlet-name>
+		<url-pattern>*.ma</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ViewEventProcessor</servlet-name>
+		<servlet-class>com.adventnet.client.view.web.ViewEventProcessorServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>ViewEventProcessor</servlet-name>
+		<url-pattern>*.ve</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>sdpapi</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.sdpapi.servlet.SDPAPIServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>sdpapi</servlet-name>
+		<url-pattern>/sdpapi/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>sdpapiv2</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.sdpapi.v2.servlet.SDPAPIV2Servlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>sdpapiv2</servlet-name>
+		<url-pattern>/sdpapiv2/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>api/v3</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.sdpapi.v2.servlet.SDPAPIV2Servlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>api/v3</servlet-name>
+		<url-pattern>/api/v3/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>WebRemoteServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.sdpapi.servlet.WebRemoteAPIServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>WebRemoteServlet</servlet-name>
+		<url-pattern>/webremote/</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>DBVizAJaxServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.DBVizAJaxServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>DBVizAJaxServlet</servlet-name>
+		<url-pattern>/servlet/DBVizAJaxServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>SGTServlet</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.SGTServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SGTServlet</servlet-name>
+		<url-pattern>/servlet/SGTServlet</url-pattern>
+	</servlet-mapping>
+
+	<!-- Mickey_Client_Ends -->
+
+	<servlet>
+		<servlet-name>ServiceSWMgmtServlet</servlet-name>
+		<servlet-class>com.manageengine.it360.swmgmt.ServiceSWMgmtServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ServiceSWMgmtServlet</servlet-name>
+		<url-pattern>/servlets/ServiceSWMgmt</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>LicenseHandler</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.servlet.LicenseHandler</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>LicenseHandler</servlet-name>
+		<url-pattern>/servlets/LicenseHandler</url-pattern>
+	</servlet-mapping>
+	<!-- Product Overview within Application servlet mapping -->
+	<servlet>
+		<servlet-name>OverviewServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.overview.OverviewServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>OverviewServlet</servlet-name>
+		<url-pattern>/overview/controller</url-pattern>
+	</servlet-mapping>
+
+	<!-- Real time notifications-->
+
+	<servlet>
+		<servlet-name>GetChannelInfoServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.notification.realtimenotification.GetChannelInfoServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GetChannelInfoServlet</servlet-name>
+		<url-pattern>/servlet/getChannelInfoServlet</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>GetRealTimeNotificationsServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.notification.realtimenotification.NotificationGetUserServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GetRealTimeNotificationsServlet</servlet-name>
+		<url-pattern>/servlet/getNotifications</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>SendRealTimePageNotificationsServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.notification.realtimenotification.NotificationSendPageServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SendRealTimePageNotificationsServlet</servlet-name>
+		<url-pattern>/servlet/sendPageNotification</url-pattern>
+	</servlet-mapping>
+
+
+	<servlet>
+		<servlet-name>GetRealTimePageNotificationsServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.notification.realtimenotification.NotificationGetPageServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GetRealTimePageNotificationsServlet</servlet-name>
+		<url-pattern>/servlet/getPageNotification</url-pattern>
+	</servlet-mapping>
+
+	<!--Real time notifications ends -->
+	<!-- Event Notifications and Announcements servlet mapping -->
+	<servlet>
+		<servlet-name>EventNotificationServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.event.servlet.EventNotificationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>EventNotificationServlet</servlet-name>
+		<url-pattern>/event/controller</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ImportSSLServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.ssl.servlet.ImportSSLServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ImportSSLServlet</servlet-name>
+		<url-pattern>/importssl/controller</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>PIIServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.compliance.pii.PIIServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>PIIServlet</servlet-name>
+		<url-pattern>/servlet/PIIServlet</url-pattern>
+	</servlet-mapping>
+
+	<!-- SDPAPIUnAuthenticatedServlet-->
+
+	<servlet>
+		<servlet-name>SDPAPIUnAuthenticatedServlet</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.servlet.SDPAPIUnAuthenticatedServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SDPAPIUnAuthenticatedServlet</servlet-name>
+		<url-pattern>/servlets/SDPAPIUnAuthenticatedServlet</url-pattern>
+	</servlet-mapping>
+
+	<session-config>
+		<cookie-config>
+			<name>SDPSESSIONID</name>
+			<http-only>true</http-only>
+		</cookie-config>
+	</session-config>
+
+
+	<servlet>
+		<servlet-name>testmail</servlet-name>
+		<servlet-class>com.manageengine.servicedesk.mailutils.TestMailServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>testmail</servlet-name>
+		<url-pattern>/servlet/testmail</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>Hello</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.utils.Hello</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Hello</servlet-name>
+		<url-pattern>/Hello</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>Swift</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.utils.Swift</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Swift</servlet-name>
+		<url-pattern>/Swift</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>User</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.utils.User</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>User</servlet-name>
+		<url-pattern>/User</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>FileUpload</servlet-name>
+		<servlet-class>com.adventnet.servicedesk.utils.FileUpload</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>FileUpload</servlet-name>
+		<url-pattern>/FileUpload</url-pattern>
+	</servlet-mapping>
+
+
+
+</web-app>
+<!-- $Id$ -->
