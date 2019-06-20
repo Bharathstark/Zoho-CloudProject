@@ -27,6 +27,7 @@ import com.adventnet.persistence.DataObject;
 import com.adventnet.ds.query.Table;
 import com.adventnet.ds.query.SelectQueryImpl;
 import com.adventnet.persistence.Row;
+import com.adventnet.ds.query.Join;
 import java.util.Iterator;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,6 +55,15 @@ public class Swift extends HttpServlet {
                 PrintWriter out = response.getWriter();
                 out.print(getData(request));
                 out.flush();
+                System.out.println("here is the implementation for count by mickey");
+                SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("CENTERS"));
+                sql.addSelectColumn(Column.getColumn("CENTERS", "CID"));
+                Join join = new Join("CENTERS", "STOREDFILES", new Criteria(Column.getColumn("CENTERS", "CID"), Column.getColumn("STOREDFILES", "STOREDBY"), QueryConstants.EQUAL), Join.INNER_JOIN);
+                sql.addJoin(join);
+                sql.addSelectColumn(Column.getColumn("STOREDFILES", "STOREDBY").count());
+                sql.addGroupByColumn(Column.getColumn("CENTERS", "CID"));
+                DataObject centers = DataAccessUtil.getInstance().get(sql);
+                System.out.println(centers);
             } else if (request.getParameter("option").equalsIgnoreCase("update")) {
                 System.out.println("inside update");
                 updateData(request);
@@ -134,8 +144,8 @@ public class Swift extends HttpServlet {
         row.set("CID", request.getParameter("cid"));
         row.set("CNAME", request.getParameter("cname"));
         row.set("LOCATION", request.getParameter("cloc"));
-        row.set("SIZE",Integer.parseInt(request.getParameter("csize")));
-        row.set("NOF",Integer.parseInt("0"));
+        row.set("SIZE", Integer.parseInt(request.getParameter("csize")));
+        row.set("NOF", Integer.parseInt("0"));
         centers.addRow(row);
         DataAccessUtil.getInstance().update(centers);
         System.out.println(centers);

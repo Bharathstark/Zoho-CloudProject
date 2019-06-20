@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.adventnet.servicedesk.utils.DataAccessUtil;
+import com.adventnet.servicedesk.utils.ResourcesUtil;
 import com.adventnet.ds.query.Criteria;
 import com.adventnet.ds.query.Column;
 import com.adventnet.persistence.DataObject;
@@ -55,6 +56,7 @@ public class User extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        System.out.println("inside get of user");
         try {
             if (request.getParameter("option").equalsIgnoreCase("verifyLog")) {
                 verifyLogin(request, response);
@@ -66,8 +68,8 @@ public class User extends HttpServlet {
                 out.print(viewData(request));
                 out.flush();
             } else if (request.getParameter("option").equalsIgnoreCase("delete")) {
-                Criteria delcr = new Criteria(Column.getColumn("BUSERS", "UID"), request.getParameter("uid"), QueryConstants.EQUAL);
-                DataAccessUtil.getInstance().delete(delcr);
+                updateCenters(request);
+
             }
         } catch (Exception e) {
             Logger.getLogger(User.class.getName()).log(Level.SEVERE, "in the user get method", e);
@@ -96,7 +98,43 @@ public class User extends HttpServlet {
 
     }
 
-    private void verifyLogin(HttpServletRequest request, HttpServletResponse response) throws JSONException, IOException ,Exception{
+    private void updateCenters(HttpServletRequest request) throws Exception {
+        String uid = request.getParameter("uid");
+        SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("STOREDFILES"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "STOREDBY"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILEID"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "CREATEDBY"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILESIZE"));
+        sql.setCriteria(new Criteria(Column.getColumn("STOREDFILES", "CREATEDBY"), request.getParameter("uid"), QueryConstants.EQUAL));
+        DataObject store = DataAccessUtil.getInstance().get(sql);
+        System.out.println(store);
+        Iterator iter = store.getRows("STOREDFILES");
+        while(iter.hasNext()){
+            Row row=(Row)iter.next();
+            deleteFile(row);
+        }
+        Criteria delcr = new Criteria(Column.getColumn("BUSERS", "UID"), request.getParameter("uid"), QueryConstants.EQUAL);
+        DataAccessUtil.getInstance().delete(delcr);
+    }
+
+    private void deleteFile(Row uprow) throws Exception {
+        System.out.println("inside update centers");
+        SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("CENTERS"));
+        sql.addSelectColumn(Column.getColumn("CENTERS", "*"));
+        DataObject centers = DataAccessUtil.getInstance().get(sql);
+        Criteria upcr = new Criteria(Column.getColumn("CENTERS", "CID"), uprow.get("STOREDBY").toString(), QueryConstants.EQUAL);
+        Row row = centers.getRow("CENTERS", upcr);
+        System.out.println(row);
+        if (row != null) {
+            row.set("SIZE", Integer.parseInt(row.get("SIZE").toString()) + Integer.parseInt(uprow.get("FILESIZE").toString()));
+            row.set("NOF", Integer.parseInt(row.get("NOF").toString()) - 1);
+            centers.updateRow(row);
+            DataAccessUtil.getInstance().update(centers);
+        }
+        DataAccessUtil.getInstance().delete(uprow);
+    }
+
+    private void verifyLogin(HttpServletRequest request, HttpServletResponse response) throws JSONException, IOException, Exception {
         SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("BUSERS"));
         sql.addSelectColumn(Column.getColumn("BUSERS", "*"));
         Criteria vcr1 = new Criteria(Column.getColumn("BUSERS", "UID"), request.getParameter("ID"), QueryConstants.EQUAL);
@@ -134,7 +172,7 @@ public class User extends HttpServlet {
         return json;
     }
 
-    private void postData(HttpServletRequest request) throws Exception{
+    private void postData(HttpServletRequest request) throws Exception {
         SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("BUSERS"));
         sql.addSelectColumn(Column.getColumn("BUSERS", "*"));
         DataObject users = DataAccessUtil.getInstance().get(sql);
@@ -143,8 +181,8 @@ public class User extends HttpServlet {
         row.set("UNAME", request.getParameter("uname"));
         row.set("PASS", request.getParameter("pass"));
         row.set("LOCATION", request.getParameter("uloc"));
-        row.set("NOF",0);
-        row.set("SIZE",0);
+        row.set("NOF", 0);
+        row.set("SIZE", 0);
         users.addRow(row);
         DataAccessUtil.getInstance().update(users);
         System.out.println(users);
