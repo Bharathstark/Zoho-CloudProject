@@ -109,7 +109,7 @@
                                     class="elevation-1"
                                     >
                                     <template v-slot:items="props">
-                                        <tr @click="fselected=props.item">
+                                        <tr @click="fselected=props.item" @dblclick="ReadFile()">
                                             <td>{{ props.item.fileid }}</td>
                                             <td >{{ props.item.filename}}</td>
                                             <td>{{ props.item.filesize}}</td>
@@ -197,7 +197,9 @@
                                                 required
                                                 ></v-text-field>
                                             <v-btn
+                                                ref="readfilename"
                                                 @click="ReadFile()"
+                                                v-bind:value="fselected.filename"
                                                 color="blue-grey"
                                                 class="white--text"
                                                 >
@@ -296,11 +298,7 @@ new Vue({el: '#app',
         },
         submitFile()
         {
-
             console.log(size)
-
-    
-            
                 const params = new URLSearchParams();
                 params.append('uid', this.user);
                 params.append('fname', filename);
@@ -324,7 +322,7 @@ new Vue({el: '#app',
         {
             await axios.get('/FileUpload', {
                 params: {
-                    option:"viewDataUser",
+                    option:"delete",
                     uid: this.user,
                     fileid: this.delfile
                 }
@@ -341,11 +339,10 @@ new Vue({el: '#app',
         },
         async ReadFile()
         {
-            await axios.get('/FileView', {
+            await axios.get('/FileUpload', {
                 params: {
                     option: "download",
-                    FILE: this.$refs.readfile.value,
-                    ID: this.user
+                    FILE: this.$refs.readfile.value
                 }
             })
                     .then(response => (this.FileDownload(response))
@@ -367,13 +364,15 @@ new Vue({el: '#app',
             this.ufids = this.info.map(function (e) {
                 return e['fileid']
             });
-            console.log(this.info)
+            console.log(this.ufids)
         },
         FileDownload(response) {
+            console.log("response")
+            console.log(response.data)
             const url = window.URL.createObjectURL(new Blob([response.data]))
             const link = document.createElement('a')
             link.href = url
-            link.setAttribute('download', this.$refs.readfile.value) //or any other extension
+            link.setAttribute('download', this.$refs.readfilename.value) //or any other extension
             document.body.appendChild(link)
             link.click()
         },
