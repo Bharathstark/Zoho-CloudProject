@@ -262,8 +262,8 @@
                                             >
                                             <template v-slot:items="props">
 
-                                                <td>{{ props.item.uid}}</td>
-                                                <td >{{ props.item.cid}}</td>
+                                                <td>{{ props.item.createdby}}</td>
+                                                <td >{{ props.item.storedby}}</td>
                                                 <td>{{ props.item.filename}}</td>
                                                 <td>{{ props.item.filesize }}</td>
                                                 <td>{{ props.item.type}}</td>
@@ -297,7 +297,6 @@
                                 class="elevation-1"
                                 >
                                 <template v-slot:items="props">
-                                    <tr @click="showClick(props.item)">
                                         <td>{{ props.item.cid }}</td>
                                         <td >{{ props.item.cname}}</td>
                                         <td>{{ props.item.location}}</td>
@@ -406,9 +405,9 @@ new Vue({el: '#add',
                 {
                     text: 'User ID',
                     align: 'left',
-                    value: 'uid'
+                    value: 'createdby'
                 },
-                {text: 'Data Center Id', value: 'cid'},
+                {text: 'Data Center Id', value: 'storedby'},
                 {text: 'Filename', value: 'filename'},
                 {text: 'File Size', value: 'filesize'},
                 {text: 'Type', value: 'type'},
@@ -464,15 +463,16 @@ new Vue({el: '#add',
         },
         async getFileTable()
         {
-            await axios.get('/FileView', {
+            console.log("getting file table")
+            await axios.get('/FileUpload', {
                 params: {
-                    option: "viewFiles",
+                    option: "adminViewFiles",
                 }
             })
                     .then(response => (this.finfo = response.data)
                     )
             this.render = this.render + 1;
-            console.log(this.info)
+            console.log(this.finfo)
 
         },
         async postData()
@@ -513,10 +513,6 @@ new Vue({el: '#add',
             this.$refs.uform.reset();
             this.getUserTable();
         },
-        showClick(a)
-        {
-            this.cselected = a;
-        },
         async updateTable()
         {
             await axios.get('/Swift', {
@@ -553,6 +549,7 @@ new Vue({el: '#add',
     beforeMount() {
         this.getTable();
         this.getUserTable();
+        this.getFileTable();
       
     }
 });
