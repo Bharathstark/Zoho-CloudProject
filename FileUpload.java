@@ -60,24 +60,27 @@ public class FileUpload extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            String choice=request.getParameter("option");
-            if(choice.equalsIgnoreCase("viewDataUser"))
-            {
+            String choice = request.getParameter("option");
+            if (choice.equalsIgnoreCase("viewDataUser")) {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 PrintWriter out = response.getWriter();
                 out.print(viewUserData(request));
                 out.flush();
-            }
-            else if(choice.equalsIgnoreCase("download"))
-            {
-                
-            }
-            else if(choice.equalsIgnoreCase("delete"))
-            {
-                Criteria delcr = new Criteria(Column.getColumn("STOREDFILES", "UID"), request.getParameter("uid"), QueryConstants.EQUAL);
-                DataAccessUtil.getInstance().delete(delcr.and(new Criteria(Column.getColumn("STOREDFILES", "FILEID"),request.getParameter("fileid"), QueryConstants.EQUAL)));
-                
+            } else if (choice.equalsIgnoreCase("download")) {
+                System.out.println("inside get of downoad file");
+                downloadFile(request, response);
+
+            } else if (choice.equalsIgnoreCase("delete")) {
+                deleteFile(request);
+
+            } else if (choice.equals("adminViewFiles")) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                PrintWriter out = response.getWriter();
+                out.print(viewAdminData(request));
+                out.flush();
+
             }
 
         } catch (Exception e) {
@@ -101,14 +104,14 @@ public class FileUpload extends HttpServlet {
             System.out.println("inside the post method of file uploadz");
             String fname = request.getParameter("fname");
             String name = request.getParameter("uid");
-            int fsize =Integer.parseInt(request.getParameter("fsize").toString());
+            int fsize = Integer.parseInt(request.getParameter("fsize").toString());
             String content = request.getParameter("file");
-            String cid=null;
+            String cid = null;
             SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("CENTERS"));
             sql.addSelectColumn(Column.getColumn("CENTERS", "CID"));
             sql.addSelectColumn(Column.getColumn("CENTERS", "SIZE"));
             sql.addSelectColumn(Column.getColumn("CENTERS", "LOCATION"));
-            Criteria sicr=new Criteria(Column.getColumn("CENTERS","SIZE"), fsize,QueryConstants.GREATER_EQUAL);
+            Criteria sicr = new Criteria(Column.getColumn("CENTERS", "SIZE"), fsize, QueryConstants.GREATER_EQUAL);
             sql.setCriteria(sicr);
             Join join = new Join("CENTERS", "BUSERS", new Criteria(Column.getColumn("CENTERS", "LOCATION"), Column.getColumn("BUSERS", "LOCATION"), QueryConstants.EQUAL), Join.INNER_JOIN);
             sql.addJoin(join);
@@ -128,10 +131,8 @@ public class FileUpload extends HttpServlet {
             if (row != null) {
                 cid = (String) row.get("CID").toString();
                 System.out.println("caling insert of file on" + cid);
-                insert(name, cid, fname, fsize, content,"o");
-            }
-            else
-            {
+                insert(name, cid, fname, fsize, content, "o");
+            } else {
                 System.out.println("NOT ENOUGH SPACE IN STORING ORIGINAL");
             }
             System.out.println("inserting the replica file");
@@ -139,22 +140,56 @@ public class FileUpload extends HttpServlet {
             sql.addSelectColumn(Column.getColumn("CENTERS", "CID"));
             sql.addSelectColumn(Column.getColumn("CENTERS", "SIZE"));
             sql.addSelectColumn(Column.getColumn("CENTERS", "LOCATION"));
-            sicr=new Criteria(Column.getColumn("CENTERS","SIZE"), fsize,QueryConstants.GREATER_EQUAL);
-            sql.setCriteria(sicr.and( new Criteria(Column.getColumn("CENTERS", "CID"),cid, QueryConstants.NOT_EQUAL)));
+            sicr = new Criteria(Column.getColumn("CENTERS", "SIZE"), fsize, QueryConstants.GREATER_EQUAL);
+            sql.setCriteria(sicr.and(new Criteria(Column.getColumn("CENTERS", "CID"), cid, QueryConstants.NOT_EQUAL)));
             dataObject = DataAccessUtil.getInstance().get(sql);
             row = dataObject.getRow("CENTERS");
             if (row != null) {
                 cid = (String) row.get("CID").toString();
                 System.out.println("caling insert of file on" + cid);
-                insert(name, cid, fname, fsize, content,"r");
-            }
-            else
-            {
+                insert(name, cid, fname, fsize, content, "r");
+            } else {
                 System.out.println("NOT ENOUGH SPACE IN DATACENTERS FOR STORING REPLICA");
             }
         } catch (Exception e) {
             Logger.getLogger(FileUpload.class.getName()).log(Level.SEVERE, "in the file upload post method", e);
         }
+    }
+
+    private JSONArray viewAdminData(HttpServletRequest request) throws Exception {
+        SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("STOREDFILES"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "*"));
+        DataObject store = DataAccessUtil.getInstance().get(sql);
+        Iterator iter = store.getRows("STOREDFILES");
+        JSONArray json = new JSONArray();
+        while (iter.hasNext()) {
+            Row row = (Row) iter.next();
+            JSONObject obj = row.getAsJSON();
+            json.put(obj);
+        }
+        return json;
+
+    }
+
+    private void downloadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        System.out.println("inside download file");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+        SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("STOREDFILES"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILEID"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILE"));
+        Criteria downcr = new Criteria(Column.getColumn("STOREDFILES", "FILEID"), request.getParameter("FILE"), QueryConstants.EQUAL);
+        sql.setCriteria(downcr);
+        DataObject store = DataAccessUtil.getInstance().get(sql);
+        Row row = store.getRow("STOREDFILES");
+        if (row != null) {
+            System.out.println("inside file download");
+            System.out.println(row.get("FILE"));
+            out.print(row.get("FILE"));
+            out.flush();
+        }
+
     }
 
     public void insert(String name, String cid, String fname, int fsize, String content, String o) throws SQLException, Exception {
@@ -167,57 +202,55 @@ public class FileUpload extends HttpServlet {
         row.set("CREATEDBY", name);
         row.set("FILESIZE", fsize);
         row.set("STOREDBY", cid);
-        row.set("TYPE",o);
+        row.set("TYPE", o);
         store.addRow(row);
         DataAccessUtil.getInstance().update(store);
-        updateCenters(cid,fsize);
-        updateBusers(name,fsize);
+        updateCenters(cid, fsize);
+        updateBusers(name, fsize);
     }
-     
-    private void updateCenters(String cid,int size) throws Exception
-    {          
+
+    private void updateCenters(String cid, int size) throws Exception {
         System.out.println("inside update centers");
         SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("CENTERS"));
         sql.addSelectColumn(Column.getColumn("CENTERS", "*"));
         DataObject centers = DataAccessUtil.getInstance().get(sql);
-        Criteria upcr = new Criteria(Column.getColumn("CENTERS", "CID"),cid, QueryConstants.EQUAL);
+        Criteria upcr = new Criteria(Column.getColumn("CENTERS", "CID"), cid, QueryConstants.EQUAL);
         Row row = centers.getRow("CENTERS", upcr);
         System.out.println(row);
         if (row != null) {
-            row.set("SIZE",Integer.parseInt(row.get("SIZE").toString())-size);
-            row.set("NOF",Integer.parseInt(row.get("NOF").toString())+1);
+            row.set("SIZE", Integer.parseInt(row.get("SIZE").toString()) - size);
+            row.set("NOF", Integer.parseInt(row.get("NOF").toString()) + 1);
             centers.updateRow(row);
             DataAccessUtil.getInstance().update(centers);
         }
 
     }
-    private void updateBusers(String uid,int size) throws Exception
-    {
+
+    private void updateBusers(String uid, int size) throws Exception {
         System.out.println("inside update Busers");
         SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("BUSERS"));
         sql.addSelectColumn(Column.getColumn("BUSERS", "*"));
         DataObject busers = DataAccessUtil.getInstance().get(sql);
-        Criteria upcr = new Criteria(Column.getColumn("BUSERS", "UID"),uid, QueryConstants.EQUAL);
+        Criteria upcr = new Criteria(Column.getColumn("BUSERS", "UID"), uid, QueryConstants.EQUAL);
         Row row = busers.getRow("BUSERS", upcr);
         System.out.println(row);
         if (row != null) {
-            row.set("SIZE",Integer.parseInt(row.get("SIZE").toString())+size);
-            row.set("NOF",Integer.parseInt(row.get("NOF").toString())+1);
+            row.set("SIZE", Integer.parseInt(row.get("SIZE").toString()) + size);
+            row.set("NOF", Integer.parseInt(row.get("NOF").toString()) + 1);
             busers.updateRow(row);
             DataAccessUtil.getInstance().update(busers);
         }
     }
-    
-    private JSONArray viewUserData(HttpServletRequest request) throws Exception
-    {
+
+    private JSONArray viewUserData(HttpServletRequest request) throws Exception {
         SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("STOREDFILES"));
         sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILEID"));
         sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILENAME"));
         sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILESIZE"));
         sql.addSelectColumn(Column.getColumn("STOREDFILES", "TYPE"));
         sql.addSelectColumn(Column.getColumn("STOREDFILES", "CREATEDBY"));
-        Criteria sicr=new Criteria(Column.getColumn("STOREDFILES","CREATEDBY"),request.getParameter("ID"),QueryConstants.EQUAL);
-        sql.setCriteria(sicr.and( new Criteria(Column.getColumn("STOREDFILES", "TYPE"),"o", QueryConstants.EQUAL)));
+        Criteria sicr = new Criteria(Column.getColumn("STOREDFILES", "CREATEDBY"), request.getParameter("ID"), QueryConstants.EQUAL);
+        sql.setCriteria(sicr.and(new Criteria(Column.getColumn("STOREDFILES", "TYPE"), "o", QueryConstants.EQUAL)));
         DataObject store = DataAccessUtil.getInstance().get(sql);
         Iterator iter = store.getRows("STOREDFILES");
         JSONArray json = new JSONArray();
@@ -227,6 +260,79 @@ public class FileUpload extends HttpServlet {
             json.put(obj);
         }
         return json;
+    }
+
+    private void deleteFile(HttpServletRequest request) throws Exception {
+        SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("STOREDFILES"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILEID"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "FILESIZE"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "CREATEDBY"));
+        sql.addSelectColumn(Column.getColumn("STOREDFILES", "STOREDBY"));
+        System.out.println("inside delete of file upload");
+        String uid = request.getParameter("uid");
+        System.out.println(request.getParameter("fileid"));
+        Criteria delcr = new Criteria(Column.getColumn("STOREDFILES", "CREATEDBY"), request.getParameter("uid"), QueryConstants.EQUAL);
+        delcr = delcr.and(new Criteria(Column.getColumn("STOREDFILES", "FILEID"), request.getParameter("fileid"), QueryConstants.EQUAL));
+        sql.setCriteria(delcr);
+        DataObject store = DataAccessUtil.getInstance().get(sql);
+        Row row = store.getRow("STOREDFILES");
+        if (row != null) {
+            DataAccessUtil.getInstance().delete(delcr);
+            System.out.println("deleting original file");
+            upDelUsers(row.get("CREATEDBY").toString(), Integer.parseInt(row.get("FILESIZE").toString()));
+            upDelCenters(row.get("STOREDBY").toString(), Integer.parseInt(row.get("FILESIZE").toString()));
+            System.out.println("delete file id" + row.get("CREATEDBY"));
+            System.out.println("delete file id" + row.get("STOREDBY"));
+            System.out.println("delete file id" + row.get("FILESIZE"));
+        }
+        delcr = new Criteria(Column.getColumn("STOREDFILES", "CREATEDBY"), request.getParameter("uid"), QueryConstants.EQUAL);
+        delcr = delcr.and(new Criteria(Column.getColumn("STOREDFILES", "FILEID"), Integer.parseInt(request.getParameter("fileid").toString()) + 1, QueryConstants.EQUAL));
+        sql.setCriteria(delcr);
+        store = DataAccessUtil.getInstance().get(sql);
+        row = store.getRow("STOREDFILES");
+        if (row != null) {
+            DataAccessUtil.getInstance().delete(delcr);
+            System.out.println("deleting original file");
+            upDelUsers(row.get("CREATEDBY").toString(), Integer.parseInt(row.get("FILESIZE").toString()));
+            upDelCenters(row.get("STOREDBY").toString(), Integer.parseInt(row.get("FILESIZE").toString()));
+            System.out.println("delete file id" + row.get("CREATEDBY"));
+            System.out.println("delete file id" + row.get("STOREDBY"));
+            System.out.println("delete file id" + row.get("FILESIZE"));
+        }
+    }
+
+    private void upDelUsers(String uid, int size) throws Exception {
+        System.out.println("inside update Busers");
+        SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("BUSERS"));
+        sql.addSelectColumn(Column.getColumn("BUSERS", "*"));
+        DataObject busers = DataAccessUtil.getInstance().get(sql);
+        Criteria upcr = new Criteria(Column.getColumn("BUSERS", "UID"), uid, QueryConstants.EQUAL);
+        Row row = busers.getRow("BUSERS", upcr);
+        System.out.println(row);
+        if (row != null) {
+            row.set("SIZE", Integer.parseInt(row.get("SIZE").toString()) - size);
+            row.set("NOF", Integer.parseInt(row.get("NOF").toString()) - 1);
+            busers.updateRow(row);
+            DataAccessUtil.getInstance().update(busers);
+        }
+
+    }
+
+    private void upDelCenters(String cid, int size) throws Exception {
+        System.out.println("inside update centers");
+        SelectQueryImpl sql = new SelectQueryImpl(Table.getTable("CENTERS"));
+        sql.addSelectColumn(Column.getColumn("CENTERS", "*"));
+        DataObject centers = DataAccessUtil.getInstance().get(sql);
+        Criteria upcr = new Criteria(Column.getColumn("CENTERS", "CID"), cid, QueryConstants.EQUAL);
+        Row row = centers.getRow("CENTERS", upcr);
+        System.out.println(row);
+        if (row != null) {
+            row.set("SIZE", Integer.parseInt(row.get("SIZE").toString()) + size);
+            row.set("NOF", Integer.parseInt(row.get("NOF").toString()) - 1);
+            centers.updateRow(row);
+            DataAccessUtil.getInstance().update(centers);
+        }
+
     }
 
     /**
